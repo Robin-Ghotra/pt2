@@ -1,0 +1,92 @@
+
+clear; clc; close all; format compact
+
+load Downloads/StartingCells.mat        %loads file into workspace
+
+fig = figure();       %finds active figure without arg
+set(gca,'Color',[0.2 0.50 1])       %sets background color
+hold on
+xlim([0 20])        % axes limits based on instruction figures
+ylim([0 20])
+xticks([2:2:20])        % tick marks for clarity
+yticks([2:2:20])
+StartMarksPlotting = flipud(StartingCells);     %flip upside down to plot
+for i = 1:size(StartMarksPlotting,1)        % for loop to iterate plotting 1s and 0s
+    for j = 1:size(StartMarksPlotting,2)
+        if StartMarksPlotting(i,j)>0
+            plot(j,i,'ko','MarkerSize',12,'MarkerFaceColor','black')
+        end
+    end
+end
+hold off
+pause(0.5)  %pause for 0.5 seconds
+while(1)        %while loop that requests user input
+    m = input('Press s to step the simulation or q to quit: ','s');
+    if m == 's' || m == 'S'     %if inputs s or capital, plots starting cells
+        r = StartingCells;
+        steps = 1;
+        live = 0;
+        for n = 1:steps
+            for i = 1:length(r)     % Life rules/conditions below
+                for j = 1:length(r)
+                    live = CellStat(r,i,j);
+                    if live < 2 && r(i,j) == 1  %if live cells have less than 2, they die
+                        r(i,j) = 0;
+                    elseif live > 3 && r(i,j) == 1      %if live has more than 3 they die
+                        r(i,j) = 0;
+                    elseif live == 3 && r(i,j) == 0     %if live has exactly 3, it reproduces
+                        r(i,j) = 1;
+                    end
+                end
+            end
+        end
+        fig = figure();
+        set(gca,'Color',[0.2 0.50 1])
+        hold on
+        xlim([0 20])
+        ylim([0 20])
+        xticks([2:2:20])
+        yticks([2:2:20])
+        newplot = flipud(r);
+        for i = 1:size(newplot,1)       %plots updated matrix
+            for j = 1:size(newplot,2)
+                if newplot(i,j)>0
+                    plot(j,i,'ko','MarkerSize',12,'MarkerFaceColor','black')
+                end
+            end
+        end
+        hold off
+        pause(0.5)
+    elseif m == 'q' || m == 'Q'     % if input is quit, it breaks and quits
+        disp('Thanks for simulating life')
+        break
+    else        % if not s or q entered, requests to enter it
+        disp('Bad value entered. Please enter s or q')
+    end
+end
+
+%functions
+function [live] = CellStat(grid,row,col)
+%this function finds the number of 1 segments surrounding it
+live = 0;
+for i = row-1:row+1
+    %making sure the cell is in the matrix
+    if i <= 0 || i > length(grid)
+        continue
+    end
+
+    for j = col-1:col+1         %conditions for alive and dead
+        if j <= 0 || j > length(grid)
+            continue
+        end
+        %making sure the cell is not counted as its own neighbour
+        %segment
+        if i == row && j == col
+            continue
+        end
+        if grid(i,j) == 1
+            live = live + 1;
+        end
+    end
+end
+end
